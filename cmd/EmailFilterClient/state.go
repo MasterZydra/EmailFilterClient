@@ -33,7 +33,7 @@ func LoadState() (*States, error) {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
-	file, err := os.Open(stateJson)
+	file, err := os.Open(stateJsonPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return states, nil // Return an empty map if the file doesn't exist
@@ -53,7 +53,7 @@ func SaveState(states *States) error {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
-	file, err := os.Create(stateJson)
+	file, err := os.Create(stateJsonPath)
 	if err != nil {
 		return err
 	}

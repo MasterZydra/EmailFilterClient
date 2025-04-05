@@ -2,39 +2,52 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
 )
 
-var configJson = "./config.json"
-var blacklistJson = "./blacklist.json"
-var stateJson = "./state.json"
+var configJsonPath = "./config.json"
+var blacklistJsonPath = "./blacklist.json"
+var stateJsonPath = "./state.json"
+var logFilePath = "./info.log"
 
 func main() {
+	// Open the log file
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening log file:", err)
+		return
+	}
+	defer logFile.Close()
+
+	// Set log output to the file
+	log.SetOutput(logFile)
+
 	for {
 		startTime := time.Now()
 
 		// Load configuration
-		config, err := ReadConfig(configJson)
+		config, err := ReadConfig(configJsonPath)
 		if err != nil {
-			fmt.Println("Error reading config:", err)
-			return
+			log.Fatalf("Error reading config: %v", err)
 		}
 
 		// Load blacklist
-		blacklist, err := ReadBlacklist(blacklistJson)
+		blacklist, err := ReadBlacklist(blacklistJsonPath)
 		if err != nil {
-			fmt.Println("Error reading blacklist:", err)
-			return
+			log.Fatalf("Error reading blacklist: %v", err)
 		}
 
 		// Process each IMAP connection
 		for _, connection := range config.IMAP_Connections {
-			fmt.Printf("Processing connection: %s\n", connection.Email)
+			log.Println("")
+			log.Printf("Processing inbox: %s\n", connection.Email)
 			if err := ProcessIMAPConnection(connection, blacklist); err != nil {
-				fmt.Printf("Error processing connection %s: %v\n", connection.Email, err)
+				log.Fatalf("Error processing connection %s: %v\n", connection.Email, err)
 			}
 		}
 
@@ -42,7 +55,8 @@ func main() {
 		elapsed := time.Since(startTime)
 		sleepDuration := time.Duration(config.Interval)*time.Minute - elapsed
 		if sleepDuration > 0 {
-			fmt.Printf("Sleeping for %v before the next iteration...\n", sleepDuration)
+			log.Println("")
+			log.Printf("Sleeping for %v before the next iteration...\n", sleepDuration)
 			time.Sleep(sleepDuration)
 		}
 	}
@@ -74,9 +88,9 @@ func ProcessIMAPConnection(connection IMAP_Connection, blacklist *Blacklist) err
 		return fmt.Errorf("failed to select INBOX: %w", err)
 	}
 
-	fmt.Printf("Inbox for %s has %d messages\n", connection.Email, inbox.Messages)
+	log.Printf("Inbox for %s has %d messages\n", connection.Email, inbox.Messages)
 	if inbox.Messages == 0 {
-		fmt.Println("No messages. Skipping.")
+		log.Println("No messages. Skipping.")
 		return nil
 	}
 
@@ -90,7 +104,7 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 	from := state.SeqNumber + 1
 	to := totalMessages
 	if from > to {
-		fmt.Println("No new messages to process.")
+		log.Println("No new messages to process.")
 		return nil
 	}
 
@@ -126,7 +140,7 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 		return fmt.Errorf("failed to expunge messages: %w", err)
 	}
 
-	fmt.Println("Finished processing messages.")
+	log.Println("Finished processing messages.")
 	return nil
 }
 
@@ -134,8 +148,10 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 func ProcessMessage(c *client.Client, msg *imap.Message, blacklist *Blacklist) {
 	for _, from := range msg.Envelope.Sender {
 		if IsBlacklisted(from.Address(), blacklist) {
-			fmt.Printf("Moving message from %s to Trash\n", from.Address())
-			MoveMessageToTrash(c, msg.SeqNum)
+			log.Printf("Moving message from %s to Trash\n", from.Address())
+			if err := MoveMessageToTrash(c, msg.SeqNum); err != nil {
+				log.Printf("Error moving message to trash: %v\n", err)
+			}
 		}
 	}
 }
