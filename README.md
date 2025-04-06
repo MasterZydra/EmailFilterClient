@@ -12,6 +12,8 @@ It automates the task of identifying and moving unwanted emails to the trash, en
   - [Security](#security)
   - [Routes](#routes)
 - [Run application](#run-application)
+  - [Docker](#docker)
+  - [Without docker](#without-docker)
 
 ## Features
 - Connects to multiple IMAP email accounts.
@@ -77,18 +79,18 @@ The program also starts a webserver.
 
 Run the program with the default port 8080:
 ```bash
-$ go run webserver.go
+$ ./EmailFilterClient
 ```
 
 Run the program with a custom port:
 ```bash
-$ go run webserver.go -port=9090
+$ ./EmailFilterClient -port=9090
 ```
 
 ### Security
 To protect the web frontend a password for basic auth (username: mailadmin) can be passed:
 ```bash
-$ go run main.go -basicAuthPassword=mySecretKey
+$ ./EmailFilterClient -basicAuthPassword=mySecretKey
 ```
 
 ### Routes
