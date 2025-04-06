@@ -23,9 +23,10 @@ func (states *States) Find(email string) *State {
 }
 
 type State struct {
-	BlacklistHash string    `json:"blacklist_hash"`
-	SeqNumber     uint32    `json:"seq_number"`
-	Date          time.Time `json:"date"`
+	HasNewsletterMailbox bool      `json:"has_newsletter_mailbox"`
+	BlacklistHash        string    `json:"blacklist_hash"`
+	SeqNumber            uint32    `json:"seq_number"`
+	Date                 time.Time `json:"date"`
 }
 
 // LoadState loads the state (last processed sequence numbers) from the JSON file

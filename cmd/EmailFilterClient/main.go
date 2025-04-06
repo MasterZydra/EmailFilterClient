@@ -116,11 +116,12 @@ func ProcessIMAPConnection(connection IMAP_Connection, blacklist *Blacklist) err
 // FetchAndProcessMessages fetches and processes messages from the INBOX
 func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *Blacklist, email string, states *States) error {
 	state := states.Find(email)
-	from := state.SeqNumber + 1
+	state.HasNewsletterMailbox = HasNewsletterMailbox(c)
+	from := state.SeqNumber
 	to := totalMessages
 
 	if state.BlacklistHash != blacklistHash {
-		from = 1
+		from = 0
 		state.BlacklistHash = blacklistHash
 	} else if from > to {
 		log.Println("No new messages to process.")
@@ -140,7 +141,7 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 	var highestSeqNum uint32
 	for msg := range messages {
 		highestSeqNum = msg.SeqNum
-		if ProcessMessage(c, msg, blacklist) {
+		if ProcessMessage(c, msg, blacklist, state) {
 			deletedMsgs++
 		}
 	}
@@ -168,7 +169,8 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 }
 
 // ProcessMessage processes a single email message
-func ProcessMessage(c *client.Client, msg *imap.Message, blacklist *Blacklist) bool {
+func ProcessMessage(c *client.Client, msg *imap.Message, blacklist *Blacklist, state *State) bool {
+	fmt.Println(msg.SeqNum, msg.Envelope.Subject)
 	for _, from := range msg.Envelope.Sender {
 		if IsInList(from.Address(), blacklist.From) {
 			log.Printf("Moving message from %s to Trash\n", from.Address())
@@ -178,9 +180,9 @@ func ProcessMessage(c *client.Client, msg *imap.Message, blacklist *Blacklist) b
 			return true
 		}
 
-		if IsInList(from.Address(), blacklist.Newsletter) {
+		if state.HasNewsletterMailbox && IsInList(from.Address(), blacklist.Newsletter) {
 			log.Printf("Moving message from %s to Newsletter\n", from.Address())
-			if err := MoveMessageToNewsletter(c, msg.SeqNum); err != nil {
+			if err := MoveMessageToNewsletter(c, state, msg.SeqNum); err != nil {
 				log.Printf("Error moving message to newsletter: %v\n", err)
 			}
 			return true

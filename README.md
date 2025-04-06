@@ -69,7 +69,8 @@ This file contains a list of email addresses or domains to filter. Below is an e
 ```
 
 - `from`: A list of email addresses or domains that should be moved to the trash.
-- `newletter`: A list of email addresses or domains that should be moved to the newsletter folder.
+- `newletter`: A list of email addresses or domains that should be moved to the newsletter folder.  
+In order for this to work you must create a folder "Newsletter".
 
 ## Web frontend
 The program also starts a webserver.
