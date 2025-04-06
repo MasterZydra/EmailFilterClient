@@ -75,10 +75,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(getHtml(`
 		<p>
 			<a href="/log">Show log file</a><br>
-			<a href="/log/clear">Clear log file</a><br>
-		</p>
-
-		<p>
 			<a href="/config">Show config file</a><br>
 			<a href="/blacklist">Show blacklist file</a><br>
 		</p>
