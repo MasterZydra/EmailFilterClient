@@ -170,7 +170,6 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 
 // ProcessMessage processes a single email message
 func ProcessMessage(c *client.Client, msg *imap.Message, blacklist *Blacklist, state *State) bool {
-	fmt.Println(msg.SeqNum, msg.Envelope.Subject)
 	for _, from := range msg.Envelope.Sender {
 		if IsInList(from.Address(), blacklist.From) {
 			log.Printf("Moving message from %s to Trash\n", from.Address())
