@@ -11,6 +11,8 @@ import (
 	"github.com/emersion/go-imap/client"
 )
 
+const version = "1.0.0"
+
 var configJsonPath = "./config/config.json"
 var blacklistJsonPath = "./config/blacklist.json"
 var stateJsonPath = "./state.json"
@@ -19,6 +21,12 @@ var logFilePath = "./log/info.log"
 var blacklistHash string
 
 func main() {
+	fmt.Println()
+	fmt.Println(" ********************************")
+	fmt.Printf(" * Email Filter Client (v%s) *\n", version)
+	fmt.Println(" ********************************")
+	fmt.Println()
+
 	// Define a command-line flag for the port
 	port := flag.String("port", "8080", "Port for the web server")
 	basicAuthPassword := flag.String("basicAuthPassword", "", "Secret key to protect web server routes")

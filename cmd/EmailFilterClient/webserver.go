@@ -267,6 +267,10 @@ func getHtml(body string) []byte {
 		<body>
 			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Filter Client</a></h1>
 			` + body + `
+			<br>
 		</body>
+		<footer>
+			<small>Version ` + version + `</small>
+		</footer>
 	</html>`)
 }
