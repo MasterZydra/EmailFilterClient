@@ -13,9 +13,16 @@ func MoveMessageToTrash(c *client.Client, seqNum uint32) error {
 	seqset := new(imap.SeqSet)
 	seqset.AddNum(seqNum)
 
+	// Note: c.Move() cannot be used here because it would change the seqNum
+
 	// Copy the message to the Trash folder
-	if err := c.Move(seqset, trashFolder); err != nil {
+	if err := c.Copy(seqset, trashFolder); err != nil {
 		return fmt.Errorf("failed to move message to Trash: %w", err)
+	}
+
+	// Mark the message as deleted in the current folder
+	if err := c.Store(seqset, imap.FormatFlagsOp(imap.AddFlags, true), []interface{}{imap.DeletedFlag}, nil); err != nil {
+		return fmt.Errorf("failed to mark message as deleted: %w", err)
 	}
 
 	return nil
@@ -30,9 +37,16 @@ func MoveMessageToNewsletter(c *client.Client, state *State, seqNum uint32) erro
 	seqset := new(imap.SeqSet)
 	seqset.AddNum(seqNum)
 
+	// Note: c.Move() cannot be used here because it would change the seqNum
+
 	// Copy the message to the newsletter folder
-	if err := c.Move(seqset, newsletterFolder); err != nil {
+	if err := c.Copy(seqset, newsletterFolder); err != nil {
 		return fmt.Errorf("failed to move message to newsletter: %w", err)
+	}
+
+	// Mark the message as deleted in the current folder
+	if err := c.Store(seqset, imap.FormatFlagsOp(imap.AddFlags, true), []interface{}{imap.DeletedFlag}, nil); err != nil {
+		return fmt.Errorf("failed to mark message as deleted: %w", err)
 	}
 
 	return nil
