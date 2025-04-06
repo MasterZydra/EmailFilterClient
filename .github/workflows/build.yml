@@ -90,5 +90,5 @@ jobs:
         docker pull ghcr.io/masterzydra/email-filter-client:latest
         docker stop email-filter-client || true
         docker rm email-filter-client || true
-        docker run -d --name email-filter-client -p 8086:8086 --restart=unless-stopped --env PORT=8086 --env BASIC_AUTH_PASSWORD=${{ secrets.PASSWORD }} -v /srv/emailfilterclient/config:/app/config -v /srv/emailfilterclient/log:/app/log ghcr.io/masterzydra/email-filter-client:latest
+        docker run -d --name email-filter-client -p 8088:8088 --restart=unless-stopped --env PORT=8088 --env BASIC_AUTH_PASSWORD=${{ secrets.PASSWORD }} -v /srv/emailfilterclient/config:/app/config -v /srv/emailfilterclient/log:/app/log ghcr.io/masterzydra/email-filter-client:latest
         docker image prune -f
