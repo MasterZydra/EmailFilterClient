@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -10,12 +11,17 @@ import (
 	"github.com/emersion/go-imap/client"
 )
 
-var configJsonPath = "./config.json"
-var blacklistJsonPath = "./blacklist.json"
+var configJsonPath = "./config/config.json"
+var blacklistJsonPath = "./config/blacklist.json"
 var stateJsonPath = "./state.json"
-var logFilePath = "./info.log"
+var logFilePath = "./log/info.log"
 
 func main() {
+	// Define a command-line flag for the port
+	port := flag.String("port", "8080", "Port for the web server")
+	basicAuthPassword := flag.String("basicAuthPassword", "", "Secret key to protect web server routes")
+	flag.Parse()
+
 	// Open the log file
 	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -26,6 +32,9 @@ func main() {
 
 	// Set log output to the file
 	log.SetOutput(logFile)
+
+	// Start the web server in a separate goroutine
+	go startWebServer(*port, *basicAuthPassword)
 
 	for {
 		startTime := time.Now()
@@ -117,11 +126,15 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 		done <- c.Fetch(seqset, []imap.FetchItem{imap.FetchEnvelope}, messages)
 	}()
 
+	var deletedMsgs uint32
 	var highestSeqNum uint32
 	for msg := range messages {
 		highestSeqNum = msg.SeqNum
-		ProcessMessage(c, msg, blacklist)
+		if ProcessMessage(c, msg, blacklist) {
+			deletedMsgs++
+		}
 	}
+	highestSeqNum -= deletedMsgs
 
 	if err := <-done; err != nil {
 		return fmt.Errorf("failed to fetch messages: %w", err)
@@ -145,13 +158,15 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 }
 
 // ProcessMessage processes a single email message
-func ProcessMessage(c *client.Client, msg *imap.Message, blacklist *Blacklist) {
+func ProcessMessage(c *client.Client, msg *imap.Message, blacklist *Blacklist) bool {
 	for _, from := range msg.Envelope.Sender {
 		if IsBlacklisted(from.Address(), blacklist) {
 			log.Printf("Moving message from %s to Trash\n", from.Address())
 			if err := MoveMessageToTrash(c, msg.SeqNum); err != nil {
 				log.Printf("Error moving message to trash: %v\n", err)
 			}
+			return true
 		}
 	}
+	return false
 }

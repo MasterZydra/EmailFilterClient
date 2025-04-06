@@ -1,0 +1,6 @@
+.gitignore
+.Dockerfile
+info.log
+LICENSE
+README.md
+state.json

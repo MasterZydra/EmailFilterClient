@@ -1,0 +1,10 @@
+{
+    "interval": 3,
+    "imapConnections": [
+        {
+            "host": "mail.provider.net:993",
+            "email": "test@domain.com",
+            "password": "password123"
+        }
+    ]
+}

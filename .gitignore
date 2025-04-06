@@ -1,5 +1,4 @@
-config.json
 state.json
-info.log
+log/info.log
 /EmailFilterClient
 /EmailFilterClient.exe
