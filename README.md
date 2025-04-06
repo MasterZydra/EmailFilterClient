@@ -16,6 +16,7 @@ It automates the task of identifying and moving unwanted emails to the trash, en
 ## Features
 - Connects to multiple IMAP email accounts.
 - Moves emails to the trash based on a customizable blacklist.
+- Moves emails to the newsletter folder based on a customizable list.
 - Maintains state to avoid reprocessing already handled emails.
 - Configurable interval for periodic email account processing.
 
@@ -59,11 +60,16 @@ This file contains a list of email addresses or domains to filter. Below is an e
     "ads@marketing.com",
     "@spam.domain",
     "unwanted.org"
+  ],
+
+  "newletter": [
+    "newsletter@example.com"
   ]
 }
 ```
 
-- `from`: A list of email addresses or domains that should be filtered.
+- `from`: A list of email addresses or domains that should be moved to the trash.
+- `newletter`: A list of email addresses or domains that should be moved to the newsletter folder.
 
 ## Web frontend
 The program also starts a webserver.

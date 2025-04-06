@@ -11,7 +11,8 @@ import (
 
 // Blacklist represents the structure of the blacklist.json file
 type Blacklist struct {
-	From []string `json:"from"`
+	From       []string `json:"from"`
+	Newsletter []string `json:"newsletter"`
 }
 
 // ReadBlacklist reads and parses the blacklist.json file
@@ -32,8 +33,8 @@ func ReadBlacklist(filePath string) (*Blacklist, error) {
 }
 
 // IsBlacklisted checks if a given email address is in the blacklist
-func IsBlacklisted(email string, blacklist *Blacklist) bool {
-	for _, entry := range blacklist.From {
+func IsInList(email string, list []string) bool {
+	for _, entry := range list {
 		if strings.HasSuffix(email, entry) {
 			return true
 		}
