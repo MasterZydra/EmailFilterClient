@@ -117,11 +117,11 @@ func ProcessIMAPConnection(connection IMAP_Connection, blacklist *Blacklist) err
 func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *Blacklist, email string, states *States) error {
 	state := states.Find(email)
 	state.HasNewsletterMailbox = HasNewsletterMailbox(c)
-	from := state.SeqNumber
+	from := state.SeqNumber + 1
 	to := totalMessages
 
 	if state.BlacklistHash != blacklistHash {
-		from = 0
+		from = 1
 		state.BlacklistHash = blacklistHash
 	} else if from > to {
 		log.Println("No new messages to process.")
