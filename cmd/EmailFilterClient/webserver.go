@@ -99,20 +99,28 @@ func logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Open the log file
-	logFile, err := os.Open(logFilePath)
+	// Read all lines from the log file
+	content, err := os.ReadFile(logFilePath)
 	if err != nil {
-		http.Error(w, "Could not open log file", http.StatusInternalServerError)
+		http.Error(w, "Could not read log file", http.StatusInternalServerError)
 		return
 	}
-	defer logFile.Close()
 
-	// Set the response headers
-	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Content-Disposition", "inline; filename=info.log")
+	response := `
+	<html>
+		<body>
+			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
+			<h2>info.log</h2>
+			<form action="/log/clear" method="get" style="height:100%">
+				<input type="submit" value="Clear" />
+				<textarea style="width:100%; min-height:90%;">` + string(content) + `</textarea>
+			</form>
+		</body>
+	</html>
+	`
 
-	// Serve the log file
-	http.ServeFile(w, r, logFilePath)
+	// Write to the response
+	w.Write([]byte(response))
 }
 
 func logClearHandler(w http.ResponseWriter, r *http.Request) {
@@ -130,8 +138,16 @@ func logClearHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond with success
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Log file cleared successfully"))
+	w.Write([]byte(`
+	<html>
+		<body>
+			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
+			<h2>info.log</h2>
+			<p>Log file cleared successfully</p>
+			<a href="/log">Back to log</a>
+		</body>
+	</html>
+	`))
 	log.Println("Log file cleared via /clear-log route")
 }
 
@@ -199,6 +215,8 @@ func configUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`
 	<html>
 		<body>
+			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
+			<h2>config.json</h2>
 			<p>Config file updated successfully</p>
 			<a href="/config">Back to config</a>
 		</body>
@@ -267,10 +285,11 @@ func blacklistUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond with success
-	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`
 	<html>
 		<body>
+			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
+			<h2>blacklist.json</h2>
 			<p>Blacklist file updated successfully</p>
 			<a href="/blacklist">Back to blacklist</a>
 		</body>
