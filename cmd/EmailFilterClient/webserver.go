@@ -71,25 +71,18 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := `
-	<html>
-		<body>
-			<h1>Email Client Filter</h1>
-			<p>
-				<a href="/log">Show log file</a><br>
-				<a href="/log/clear">Clear log file</a><br>
-			</p>
-
-			<p>
-				<a href="/config">Show config file</a><br>
-				<a href="/blacklist">Show blacklist file</a><br>
-			</p>
-		</body>
-	</html>
-	`
-
 	// Write the response
-	w.Write([]byte(response))
+	w.Write(getHtml(`
+		<p>
+			<a href="/log">Show log file</a><br>
+			<a href="/log/clear">Clear log file</a><br>
+		</p>
+
+		<p>
+			<a href="/config">Show config file</a><br>
+			<a href="/blacklist">Show blacklist file</a><br>
+		</p>
+	`))
 }
 
 func logHandler(w http.ResponseWriter, r *http.Request) {
@@ -106,21 +99,14 @@ func logHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := `
-	<html>
-		<body>
-			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
-			<h2>info.log</h2>
-			<form action="/log/clear" method="get" style="height:100%">
-				<input type="submit" value="Clear" />
-				<textarea style="width:100%; min-height:90%;">` + string(content) + `</textarea>
-			</form>
-		</body>
-	</html>
-	`
-
 	// Write to the response
-	w.Write([]byte(response))
+	w.Write(getHtml(`
+		<h2>info.log</h2>
+		<form action="/log/clear" method="get" style="height:100%">
+			<input type="submit" value="Clear" />
+			<textarea style="width:100%; min-height:95%;">` + string(content) + `</textarea>
+		</form>
+	`))
 }
 
 func logClearHandler(w http.ResponseWriter, r *http.Request) {
@@ -138,15 +124,10 @@ func logClearHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond with success
-	w.Write([]byte(`
-	<html>
-		<body>
-			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
-			<h2>info.log</h2>
-			<p>Log file cleared successfully</p>
-			<a href="/log">Back to log</a>
-		</body>
-	</html>
+	w.Write(getHtml(`
+		<h2>info.log</h2>
+		<p>Log file cleared successfully</p>
+		<a href="/log">Back to log</a>
 	`))
 	log.Println("Log file cleared via /clear-log route")
 }
@@ -165,21 +146,14 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := `
-	<html>
-		<body>
-			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
-			<h2>config.json</h2>
-			<form action="/config/update" method="post">
-				<input type="submit" value="Update" />
-				<textarea name="config" style="width:100%; min-height:500px;">` + string(configData) + `</textarea>
-			</form>
-		</body>
-	</html>
-	`
-
 	// Write the config data to the response
-	w.Write([]byte(response))
+	w.Write(getHtml(`
+		<h2>config.json</h2>
+		<form action="/config/update" method="post" style="height:100%">
+			<input type="submit" value="Update" />
+			<textarea name="config" style="width:100%; min-height:95%;">` + string(configData) + `</textarea>
+		</form>
+	`))
 }
 
 func configUpdateHandler(w http.ResponseWriter, r *http.Request) {
@@ -212,15 +186,10 @@ func configUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Respond with success
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`
-	<html>
-		<body>
-			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
-			<h2>config.json</h2>
-			<p>Config file updated successfully</p>
-			<a href="/config">Back to config</a>
-		</body>
-	</html>
+	w.Write(getHtml(`
+		<h2>config.json</h2>
+		<p>Config file updated successfully</p>
+		<a href="/config">Back to config</a>
 	`))
 	log.Println("Config file updated via /config/update route")
 }
@@ -239,21 +208,14 @@ func blacklistHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := `
-	<html>
-		<body>
-			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
-			<h2>blacklist.json</h2>
-			<form action="/blacklist/update" method="post">
-				<input type="submit" value="Update" />
-				<textarea name="blacklist" style="width:100%; min-height:500px;">` + string(blacklistData) + `</textarea>
-			</form>
-		</body>
-	</html>
-	`
-
 	// Write the blacklist data to the response
-	w.Write([]byte(response))
+	w.Write(getHtml(`
+		<h2>blacklist.json</h2>
+		<form action="/blacklist/update" method="post" style="height:100%">
+			<input type="submit" value="Update" />
+			<textarea name="blacklist" style="width:100%; min-height:95%;">` + string(blacklistData) + `</textarea>
+		</form>
+	`))
 }
 
 func blacklistUpdateHandler(w http.ResponseWriter, r *http.Request) {
@@ -285,15 +247,26 @@ func blacklistUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond with success
-	w.Write([]byte(`
-	<html>
-		<body>
-			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Client Filter</a></h1>
-			<h2>blacklist.json</h2>
-			<p>Blacklist file updated successfully</p>
-			<a href="/blacklist">Back to blacklist</a>
-		</body>
-	</html>
+	w.Write(getHtml(`
+		<h2>blacklist.json</h2>
+		<p>Blacklist file updated successfully</p>
+		<a href="/blacklist">Back to blacklist</a>
 	`))
 	log.Println("Blacklist file updated via /blacklist/update route")
+}
+
+func getHtml(body string) []byte {
+	return []byte(`<html>
+		<head>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<style>
+				h1 { font-size: 1.5em; }
+				h2 { font-size: 1.25em; }
+			</style>
+		</head>
+		<body>
+			<h1><a href="/" style="text-decoration: none;color: inherit;">Email Filter Client</a></h1>
+			` + body + `
+		</body>
+	</html>`)
 }
