@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -37,4 +39,16 @@ func IsBlacklisted(email string, blacklist *Blacklist) bool {
 		}
 	}
 	return false
+}
+
+// ComputeBlacklistHash computes a hash for the blacklist
+func ComputeBlacklistHash(filePath string) (string, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	hash := sha256.New()
+	hash.Write(content)
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }

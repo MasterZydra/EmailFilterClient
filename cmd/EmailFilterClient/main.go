@@ -16,6 +16,8 @@ var blacklistJsonPath = "./config/blacklist.json"
 var stateJsonPath = "./state.json"
 var logFilePath = "./log/info.log"
 
+var blacklistHash string
+
 func main() {
 	// Define a command-line flag for the port
 	port := flag.String("port", "8080", "Port for the web server")
@@ -49,6 +51,10 @@ func main() {
 		blacklist, err := ReadBlacklist(blacklistJsonPath)
 		if err != nil {
 			log.Fatalf("Error reading blacklist: %v", err)
+		}
+		blacklistHash, err = ComputeBlacklistHash(blacklistJsonPath)
+		if err != nil {
+			log.Fatalf("Error computing blacklist hash: %v", err)
 		}
 
 		// Process each IMAP connection
@@ -112,7 +118,11 @@ func FetchAndProcessMessages(c *client.Client, totalMessages uint32, blacklist *
 	state := states.Find(email)
 	from := state.SeqNumber + 1
 	to := totalMessages
-	if from > to {
+
+	if state.BlacklistHash != blacklistHash {
+		from = 1
+		state.BlacklistHash = blacklistHash
+	} else if from > to {
 		log.Println("No new messages to process.")
 		return nil
 	}
